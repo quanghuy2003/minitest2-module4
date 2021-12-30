@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>post</title>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script type="text/javascript">
+        function allPost() {
+            $.ajax({
+                type: "GET",
+                url: "http://localhost:8080/api/posts",
+                success: function (hi) {
+                    console.log(hi)
+                    displayPost(hi)
+                }
+            })
+        }
+
+        function displayPost(post) {
+            let res = "";
+            res += `<table border="1" cellpadding="5">
+                <tr>
+                    <th>content</th>
+                    <th>time</th>
+                    <th>title</th>
+                    <th>model</th>
+                    <th colspan="3">Action</th>
+                </tr>`
+            for (let i = 0; i < post.length; i++) {
+                res += `<tr>
+                    <td> ${post[i].content}</td>
+                    <td> ${post[i].time}</td>
+                    <td> ${post[i].title}</td>
+                    <td> ${post[i].mode.name}</td>
+                    <td><button onclick="viewPost(${post[i].id})">View</button></td>
+                    <td><button onclick="showFormEditPost(${post[i].id})">Edit</button></td>
+                    <td><button onclick="deletePost(${post[i].id})">Delete</button></td>
+                        </tr>`
+            }
+            res += `</table>`
+            document.getElementById("display").innerHTML = res;
+        }
+
+        function allMode() {
+            $.ajax({
+                type: "GET",
+                url: "http://localhost:8080/api/posts/findAllMode",
+                success: function (hi) {
+                    console.log(hi)
+                    displayPost(hi)
+                }
+            })
+        }
+
+
+        function formCreate() {
+            $.ajax({
+                type: "GET",
+                url: "http://localhost:8080/api/modes",
+                success: function (modes) {
+                    console.log(modes);
+                    let form = `<table cellpadding="5">
+                            <tr>
+                                <th>title: </th>
+                                <td><input type="text" id="title"></td>
+                            </tr>
+
+                            <tr>
+                                <th>content: </th>
+                                <td><input type="text" id="content"></td>
+                            </tr>
+                            <tr>
+                                <th>mode: </th>
+                                <td>
+                                    <select id="mode">`
+                    for (let i = 0; i < modes.length; i++) {
+                        form += `<option value="${modes[i].id}">${modes[i].name}</option>`
+                    }
+                    form += `</select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th></th>
+                                <td><button onclick="saveHouse()">Save</button></td>
+                            </tr>
+                        </table>`;
+                    document.getElementById("display").innerHTML = form;
+                }
+            })
+        }
+
+        function saveHouse() {
+            let post = {
+                "title": document.getElementById("title").value,
+                "content": document.getElementById("content").value,
+                "mode": {
+                    "id": document.getElementById("mode").value,
+                }
+            }
+            console.log(post)
+            $.ajax({
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                type: "POST",
+                url: "http://localhost:8080/api/posts",
+                data: JSON.stringify(post),
+                success: function () {
+                    alert("Thêm Thành Công")
+                    allPost();
+                },
+                error: function (error) {
+                    console.log(error)
+                }
+            })
+        }
+
+
+        function deletePost(id) {
+            if (confirm("Are you sure")) {
+                $.ajax({
+                    type: "DELETE",
+                    url: "http://localhost:8080/api/posts/" + id,
+                    success: function (post){
+                        allPost(post)
+                    },
+                    error: function (error) {
+                    }
+                })
+            }
+        }
+
+
+        function showFormEditPost(){
+
+        }
+
+        function viewPost(id){
+            $.ajax({
+                type: "GET",
+                url: "http://localhost:8080/api/posts/" + id,
+                success: function (post) {
+                    console.log(post)
+                    let view = `<table cellpadding="5">
+                                    <tr>
+                                        <th>title: </th>
+                                        <td>${post.title}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>content: </th>
+                                        <td>${post.content}</td>
+                                    </tr>
+                                      <tr>
+                                        <th>time: </th>
+                                        <td>${post.time}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>mode: </th>
+                                        <td>${post.mode.name}</td>
+                                    </tr>
+                                </table>`;
+                    console.log(view)
+                    document.getElementById("display").innerHTML = view;
+                }
+            })
+        }
+
+
+        function showFormEditPost(id) {
+            $.ajax({
+                type: "GET",
+                url: "http://localhost:8080/api/posts/" + id,
+                success: function (post) {
+                    console.log(post)
+                    $.ajax({
+                        type: "GET",
+                        url: "http://localhost:8080/api/modes",
+                        success: function (mode) {
+                            console.log(mode)
+                            let form =
+                                "<p>Title</p>" + `<input type="text" id="title" value="${post.title}">\n` + "<br>" +
+                                "<p>Content</p>" + `<input type="text" id="content" value="${post.content}">\n` + "<br>" +
+                                `<input type="hidden" id="time" value="${post.time}">\n`+
+                                "<p>Mode</p>" + `<select  id="mode">
+                                 <option value="${post.mode.id}"> ${post.mode.name}</option>`
+                            for (let i = 0; i < mode.length; i++) {
+                                form += `<option value="${mode[i].id}">${mode[i].name}</option>`
+                            }
+                            form += `</select>`
+                                + `<button onclick="updatePost(${post.id})">Thay đổi</button>`
+                            console.log(form)
+                            document.getElementById("display").innerHTML = form;
+                        }
+                    })
+                }
+            })
+        }
+
+
+        function updatePost(id) {
+            let title = document.getElementById("title").value;
+            let content = document.getElementById("content").value;
+            let time = document.getElementById("time").value;
+            let mode = document.getElementById("mode").value;
+            let post = {
+                id: id,
+                title: title,
+                content: content,
+                time:time,
+                mode: {
+                    id: mode
+                }
+            }
+            console.log(post)
+            $.ajax({
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                type: "PUT",
+                url: "http://localhost:8080/api/posts/" + id,
+                data: JSON.stringify(post),
+                success: function (post){
+                    allPost(post)
+                    alert("xong")
+                },
+                error: function (error) {
+                }
+            })
+        }
+
+
+    </script>
+</head>
+<body>
+<button onclick="allPost()">show post</button>
+<button onclick="allMode()">show post mode</button>
+<button onclick="formCreate()">add</button>
+<div id="display"></div>
+
+</body>
+</html>
