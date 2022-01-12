@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script type="text/javascript">
+        function allTest() {
+            $.ajax({
+                type: "GET",
+                url: "http://localhost:8080/api/tests",
+                success: function (hi) {
+                    console.log(hi)
+                    displayTest(hi)
+                }
+            })
+        }
+
+
+        function displayTest(test) {
+            let res = "";
+            res += `<table border="1" cellpadding="5">
+                <tr>
+                    <th>tên tp</th>
+                    <th>quốc gia</th>
+                    <th>diện tích</th>
+                    <th>dân số</th>
+                    <th>GDP</th>
+                    <th>mô tả tp</th>
+                    <th colspan="3">Action</th>
+                </tr>`
+            for (let i = 0; i < test.length; i++) {
+                res += `<tr>
+                    <td> ${test[i].nameCity}</td>
+                    <td> ${test[i].test2.name}</td>
+                    <td> ${test[i].acreage}</td>
+                    <td> ${test[i].population}</td>
+                    <td> ${test[i].gDP}</td>
+                    <td> ${test[i].description}</td>
+                    <td><button onclick="viewTest(${test[i].id})">View</button></td>
+                    <td><button onclick="showFormEditTest(${test[i].id})">Edit</button></td>
+                    <td><button onclick="deleteTest(${test[i].id})">Delete</button></td>
+                        </tr>`
+            }
+            res += `</table>`
+            document.getElementById("display").innerHTML = res;
+        }
+
+
+        function formCreateTest() {
+            $.ajax({
+                type: "GET",
+                url: "http://localhost:8080/api/test2s",
+                success: function (test2) {
+                    console.log(test2);
+                    let form = `<table cellpadding="5">
+
+                            <tr>
+                                <th>tên tp: </th>
+                                <td><input type="text" id="nameCity"></td>
+                            </tr>
+                            <tr>
+                                <th>diện tích: </th>
+                                <td><input type="text" id="acreage"></td>
+                            </tr>
+                            <tr>
+                                <th>dân số: </th>
+                                <td><input type="text" id="population"></td>
+                            </tr>
+                            <tr>
+                                <th>gDP: </th>
+                                <td><input type="text" id="gDP"></td>
+                            </tr>
+                            <tr>
+                                <th>mô tả tp: </th>
+                                <td><input type="text" id="description"></td>
+                            </tr>
+                            <tr>
+                                <th>quốc gia: </th>
+                                <td>
+                                    <select id="test2">`
+                    for (let i = 0; i < test2.length; i++) {
+                        form += `<option value="${test2[i].id}">${test2[i].name}</option>`
+                    }
+                    form += `</select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th></th>
+                                <td><button onclick="saveTest()">Save</button></td>
+                            </tr>
+                        </table>`;
+                    document.getElementById("display").innerHTML = form;
+                }
+            })
+        }
+
+        function saveTest() {
+            let test = {
+                "nameCity": document.getElementById("nameCity").value,
+                "acreage": document.getElementById("acreage").value,
+                "population": document.getElementById("population").value,
+                "gDP": document.getElementById("gDP").value,
+                "description": document.getElementById("description").value,
+                "test2": {
+                    "id": document.getElementById("test2").value,
+                },
+
+            }
+            console.log(test)
+            $.ajax({
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                type: "POST",
+                url: "http://localhost:8080/api/tests",
+                data: JSON.stringify(test),
+                success: function (test) {
+                    alert("Thêm Thành Công")
+                    allTest(test);
+                },
+                error: function (error) {
+                    console.log(error)
+                }
+            })
+        }
+
+
+
+        function deleteTest(id) {
+            if (confirm("Are you sure")) {
+                $.ajax({
+                    type: "DELETE",
+                    url: "http://localhost:8080/api/tests/" + id,
+                    success: function (test) {
+                        allTest(test)
+                    },
+                    error: function (error) {
+                    }
+                })
+            }
+        }
+
+
+        function viewTest(id) {
+            $.ajax({
+                type: "GET",
+                url: "http://localhost:8080/api/tests/" + id,
+                success: function (test) {
+                    console.log(test)
+                    let view = `<table cellpadding="5">
+                                    <tr>
+                                        <th>tên tp: </th>
+                                        <td>${test.nameCity}</td>
+                                    </tr>
+                                     <tr>
+                                        <th>quốc gia: </th>
+                                        <td>${test.test2.name}</td>
+                                    </tr>
+                                     <tr>
+                                        <th>diện tích: </th>
+                                        <td>${test.acreage}</td>
+                                    </tr>
+                                     <tr>
+                                        <th>dân số: </th>
+                                        <td>${test.population}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>GDP: </th>
+                                        <td>${test.gDP}</td>
+                                    </tr>
+                                      <tr>
+                                        <th>mô tả tp: </th>
+                                        <td>${test.description}</td>
+                                    </tr>
+                                </table>`;
+                    console.log(view)
+
+                    document.getElementById("display").innerHTML = view;
+                }
+            })
+        }
+
+
+        function showFormEditTest(id) {
+            $.ajax({
+                type: "GET",
+                url: "http://localhost:8080/api/tests/" + id,
+                success: function (test) {
+                    console.log(test)
+                    $.ajax({
+                        type: "GET",
+                        url: "http://localhost:8080/api/test2s",
+                        success: function (test2) {
+                            console.log(test2)
+                    let form =
+                        "<p>tên tp</p>" + `<input type="text" id="nameCity" value="${test.nameCity}">\n` + "<br>" +
+                        "<p>diện tích</p>" + `<input type="text" id="acreage" value="${test.acreage}">\n` + "<br>" +
+                        "<p>dân số</p>" + `<input type="text" id="population" value="${test.population}">\n` + "<br>" +
+                        "<p>GDP</p>" + `<input type="text" id="gDP" value="${test.gDP}">\n` + "<br>" +
+                        "<p>mô tả tp</p>" + `<input type="text" id="description" value="${test.description}">\n` + "<br>" +
+                        "<p>quốc gia</p>" + `<select  id="test2">
+                                 <option value="${test.test2.id}"> ${test.test2.name}</option>`
+                    for (let i = 0; i < test2.length; i++) {
+                        form += `<option value="${test2[i].id}">${test2[i].name}</option>`
+                    }
+                    form += `</select>`+
+                        `<button onclick="updateTest(${test.id})">Thay đổi</button>` + '<br>'
+                    console.log(form)
+                    document.getElementById("display").innerHTML = form;
+                        }
+                    })
+                }
+            })
+        }
+
+
+        function updateTest(id) {
+            let nameCity = document.getElementById("nameCity").value;
+            let acreage = document.getElementById("acreage").value;
+            let population = document.getElementById("population").value;
+            let gDP = document.getElementById("gDP").value;
+            let description = document.getElementById("description").value;
+            let test2 = document.getElementById("test2").value;
+            let test = {
+                nameCity: nameCity,
+                acreage: acreage,
+                population: population,
+                gDP: gDP,
+                description: description,
+                test2: {
+                    "id": test2
+                }
+            }
+            console.log(test)
+            $.ajax({
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                type: "PUT",
+                url: "http://localhost:8080/api/tests/" + id,
+                data: JSON.stringify(test),
+                success: function (test){
+                    allTest(test)
+                }
+            })
+        }
+
+
+
+    </script>
+</head>
+<body>
+<button onclick="allTest()">show</button>
+<button onclick="formCreateTest()">add</button>
+<div id="display"></div>
+
+</body>
+</html>
